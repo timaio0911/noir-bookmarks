@@ -60,18 +60,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .recent-divider.visible{width:100%}
 .recent-empty{text-align:center;padding:4rem 2rem}
 .recent-empty-text{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:200;font-style:italic;color:rgba(255,255,255,.3)}
-.footer{background:var(--bg-ghost);color:var(--fg-black);padding:5rem 1.5rem 3rem}
-.footer-title{font-family:'Playfair Display',serif;font-size:12vw;font-weight:900;text-transform:uppercase;border-bottom:2px solid var(--fg-black);padding-bottom:2rem;margin-bottom:4rem;line-height:1}
-.footer-grid{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:4rem;max-width:1200px;margin:0 auto;align-items:start}
-@media(max-width:768px){.footer-grid{grid-template-columns:1fr;gap:3rem}}
-.footer-col h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.15em;margin-bottom:1.5rem;color:var(--fg-gray)}
-.footer-col{display:flex;flex-direction:column}
-.footer-meta{text-align:right;font-size:13px;color:var(--fg-gray);display:flex;flex-direction:column;justify-content:space-between;height:100%}
-.footer-meta p{margin-bottom:.5rem}
-.footer-input-group{display:flex;gap:0;margin-top:.5rem}
-.footer-input-group .modal-input{flex:1;border-right:none}
-.footer-input-group .modal-btn{flex-shrink:0;min-width:80px}
-#pushBtn{margin-top:1rem;width:100%;font-size:13px;padding:.6rem 1rem}
 .preview-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:60;opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
 .preview-overlay.active{opacity:1;pointer-events:all}
 .preview-panel{position:fixed;top:0;right:0;width:100%;max-width:480px;height:100%;background:var(--bg-zinc);z-index:70;transform:translateX(100%);transition:transform .5s var(--ease);overflow-y:auto;display:flex;flex-direction:column}
@@ -159,7 +147,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <section class="hero" id="hero"><div class="hero-bg" id="heroBg"></div><div class="spotlight-layer" id="spotlightLayer"><div class="spotlight-text" id="spotlightText"></div></div><div class="hero-content"><div class="hero-number" id="heroNumber">0</div><div class="hero-subtitle" id="heroSubtitle">收藏夹 · 0 个</div><div class="hero-desc" id="heroDesc">最近新增：0 条</div></div></section>
 <section class="collections" id="collections"><div class="section-header"><h2 class="section-title">收藏夹 <span class="section-title-accent">/ 分组</span></h2></div><div class="collections-grid" id="collectionsGrid"></div></section>
 <section class="recent" id="recent"><div class="recent-list" id="recentList"></div></section>
-<section class="footer"><h2 class="footer-title">管理收藏</h2><div class="footer-grid"><div class="footer-col"><h3>关于</h3><p style="font-size:14px;color:var(--fg-gray);line-height:1.8">电影黑色风格的网址收藏管理工具<br>数据存储在 GitHub 仓库中</p></div><div class="footer-col"><h3>快速添加</h3><div class="footer-input-group"><input type="text" class="modal-input" id="quickAddInput" placeholder="输入网址回车..."><button class="modal-btn modal-btn-confirm" onclick="quickAdd()">添加</button></div></div><div class="footer-col"><div class="footer-meta"><p id="syncTime"></p><button class="modal-btn modal-btn-confirm" id="pushBtn" onclick="syncNow()" style="display:none;margin-top:1rem;width:100%">推送数据到仓库</button><p>© 2026 收藏库</p></div></div></div></section>
 <button class="fab hidden" id="fabBtn" onclick="openNewFolderModal()"><span class="fab-icon"><i data-lucide="plus" style="width:24px;height:24px"></i></span><span class="fab-label">新建分组</span></button>
 <div class="preview-overlay" id="previewOverlay" onclick="closePreview()"></div>
 <div class="preview-panel" id="previewPanel"><div class="preview-header"><h3 class="preview-title" id="previewTitle"></h3><button class="preview-close" onclick="closePreview()"><i data-lucide="x" style="width:20px;height:20px"></i></button></div><div class="preview-list" id="previewList"></div><div class="preview-add" id="previewAdd" style="display:none"><input type="text" class="modal-input" id="bookmarkUrlInput" placeholder="添加网址..." style="margin-bottom:.5rem"><input type="text" class="modal-input" id="bookmarkDescInput" placeholder="备注（可选）" style="margin-bottom:.5rem"><button class="modal-btn modal-btn-confirm" onclick="addBookmark()" style="width:100%">添加</button></div></div></div>
@@ -176,7 +163,7 @@ document.addEventListener("DOMContentLoaded",function(){
   lucide.createIcons();
   loadAdmin();
   loadFromRepo();
-  document.getElementById("quickAddInput").addEventListener("keydown",function(e){if(e.key==="Enter")quickAdd()});
+  var qai=document.getElementById("quickAddInput");if(qai)qai.addEventListener("keydown",function(e){if(e.key==="Enter")quickAdd()});
   document.getElementById("navLogo").addEventListener("dblclick",function(){openAdminLogin()});
   document.addEventListener("keydown",function(e){
     if(e.key==="Escape"){closePreview();closeModal();closeSearch();}
@@ -268,7 +255,7 @@ function loadAdmin(){
 function activateAdmin(){
   isAdmin=true;
   document.getElementById("fabBtn").classList.remove("hidden");
-  document.getElementById("pushBtn").style.display="block";
+  document.getElementById("adminPanel").style.display="block";
   var pa=document.getElementById("previewAdd");
   if(pa)pa.style.display="block";
 }
@@ -349,7 +336,7 @@ function doLogout(){
   localStorage.removeItem("noir-admin-token");
   closeModal();
   document.getElementById("fabBtn").classList.add("hidden");
-  document.getElementById("pushBtn").style.display="none";
+  document.getElementById("adminPanel").style.display="none";
   var pa=document.getElementById("previewAdd");if(pa)pa.style.display="none";
   showToast("\u5df2\u9000\u51fa");
 }
@@ -435,5 +422,13 @@ function doSearch(){var q=document.getElementById("searchInput").value.trim().to
 
 function showToast(msg,isErr){var ex=document.querySelector(".toast");if(ex)ex.remove();var t=document.createElement("div");t.className="toast";t.textContent=msg;if(isErr){t.style.background="#1a0000";t.style.color="#ef4444";t.style.border="1px solid #ef4444"}else{t.style.background="#0a1a0a";t.style.color="#4ade80";t.style.border="1px solid #4ade80"}document.body.appendChild(t);requestAnimationFrame(function(){t.style.opacity="1";t.style.transform="translateY(0)"});setTimeout(function(){t.style.opacity="0";t.style.transform="translateY(-10px)";setTimeout(function(){t.remove()},400)},3000);}
 </script>
+
+<div id="adminPanel" style="display:none;position:fixed;bottom:6rem;right:2rem;z-index:40;background:var(--bg-zinc);border:1px solid rgba(255,255,255,.1);padding:1.5rem;width:320px;">
+  <div style="display:flex;gap:0;margin-bottom:1rem">
+    <input type="text" class="modal-input" id="quickAddInput" placeholder="输入网址回车..." style="margin:0;border-right:none">
+    <button class="modal-btn modal-btn-confirm" onclick="quickAdd()" style="flex-shrink:0">添加</button>
+  </div>
+  <button class="modal-btn modal-btn-confirm" id="pushBtn" onclick="syncNow()" style="width:100%">推送数据</button>
+</div>
 </body>
 </html>
