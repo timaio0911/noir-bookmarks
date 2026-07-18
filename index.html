@@ -10,28 +10,13 @@
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js">
 var _autoSyncTimer=null;
 function autoSyncToGist(){
-  if(!ghToken||!gistId)return;
+  if(!ghToken||!"")return;
   clearTimeout(_autoSyncTimer);
   _autoSyncTimer=setTimeout(function(){silentSync()},2000);
 }
 async function silentSync(){if(!ghToken)return;try{var data=JSON.stringify(buildExportData(),null,2);await pushToRepo(data);document.getElementById("syncTime").textContent="\u6700\u540e\u540c\u6b65\uff1a"+new Date().toLocaleString("zh-CN");}catch(e){}}
 
-async function autoPullFromGist(){
-  if(!ghToken||!gistId)return;
-  try{
-    var remote=await gistFetch(GIST_API+"/gists/"+gistId);
-    var rc=remote.files["bookmarks.json"];
-    if(!rc)return;
-    var rd=JSON.parse(rc.content);
-    if(rd&&rd.collections){
-      collections=rd.collections||[];
-      recentBookmarks=rd.recent||[];
-      nextId=rd.nextId||1;
-      renderAll();saveLocal();
-      showToast("\u5df2\u4ece\u4e91\u7aef\u52a0\u8f7d\u6570\u636e");
-    }
-  }catch(e){}
-}
+
 function saveLocal(){try{localStorage.setItem("noir-collections",JSON.stringify(collections));localStorage.setItem("noir-recent",JSON.stringify(recentBookmarks));localStorage.setItem("noir-nextId",String(nextId));}catch(e){}document.getElementById("syncTime").textContent="\u6700\u540e\u540c\u6b65\uff1a"+new Date().toLocaleString("zh-CN");}
 
 </script>
@@ -201,11 +186,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="preview-overlay" id="previewOverlay" onclick="closePreview()"></div>
 <div class="preview-panel" id="previewPanel"><div class="preview-header"><h3 class="preview-title" id="previewTitle"></h3><button class="preview-close" onclick="closePreview()"><i data-lucide="x" style="width:20px;height:20px"></i></button></div><div class="preview-list" id="previewList"></div><div class="preview-add"><input type="text" class="preview-add-input" id="bookmarkUrlInput" placeholder="粘贴网址回车..."><input type="text" class="preview-add-desc" id="bookmarkDescInput" placeholder="备注/描述（可选）..."><button class="preview-add-btn" onclick="addBookmark()">添加</button></div></div>
 <div class="modal-overlay" id="modalOverlay"><div class="modal"><div class="modal-title">新建收藏夹</div><input type="text" class="modal-input" id="folderNameInput" placeholder="输入收藏夹名称..."><div class="modal-actions"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button><button class="modal-btn modal-btn-confirm" onclick="confirmNewFolder()">创建</button></div></div></div>
-<div class="sync-modal-overlay" id="syncModalOverlay"><div class="sync-modal"><div class="sync-modal-title">连接 GitHub Gist</div><div class="sync-modal-desc">推送数据到仓库，所有人都能查看。</div><input type="password" class="sync-modal-input" id="syncTokenInput" placeholder="粘贴 GitHub Token..."><div class="sync-modal-hint">Token 需要 repo 权限（用于推送数据到仓库）</div><div class="sync-modal-actions"><span class="sync-modal-link" onclick="disconnectSync()" id="disconnectLink" style="display:none">断开</span><span style="flex:1"></span><button class="modal-btn modal-btn-cancel" onclick="closeSyncModal()">取消</button><button class="modal-btn modal-btn-confirm" onclick="saveSyncToken()">连接</button></div></div></div>
+<div class="sync-modal-overlay" id="syncModalOverlay"><div class="sync-modal"><div class="sync-modal-title">连接 GitHub Gist</div><div class="sync-modal-desc">推送数据到仓库，所有人都能查看。</div><input type="password" class="sync-modal-input" id="syncTokenInput" placeholder="粘贴 GitHub Token..."><div class="sync-modal-hint">Token 需要 repo 权限</div><div class="sync-modal-actions"><span class="sync-modal-link" onclick="disconnectSync()" id="disconnectLink" style="display:none">断开</span><span style="flex:1"></span><button class="modal-btn modal-btn-cancel" onclick="closeSyncModal()">取消</button><button class="modal-btn modal-btn-confirm" onclick="saveSyncToken()">连接</button></div></div></div>
 <div class="search-overlay" id="searchOverlay"><div class="search-box"><div class="search-input-wrap"><i data-lucide="search" style="width:24px;height:24px"></i><input type="text" class="search-input" id="searchInput" placeholder="搜索收藏..." oninput="doSearch()"><button class="search-close" onclick="closeSearch()">ESC</button></div><div class="search-results" id="searchResults"><div class="search-hint">输入关键词搜索网址、标题或备注</div></div></div></div>
 <script>
 var collections=[],nextId=1,activeCollectionId=null,recentBookmarks=[];
-var GIST_API="https://api.github.com",GIST_DESC="noir-bookmarks-data",gistId=null,ghToken=null;
+var ghToken=null;
 
 document.addEventListener("DOMContentLoaded",function(){
   lucide.createIcons();loadSyncConfig();load();renderAll();initSpotlight();initScrollEffects();
@@ -260,15 +245,15 @@ function openSearch(){document.getElementById("searchOverlay").classList.add("ac
 function closeSearch(){document.getElementById("searchOverlay").classList.remove("active");document.getElementById("searchInput").value="";document.getElementById("searchResults").innerHTML='<div class="search-hint">\u8f93\u5165\u5173\u952e\u8bcd\u641c\u7d22</div>';}
 function doSearch(){var q=document.getElementById("searchInput").value.trim().toLowerCase(),el=document.getElementById("searchResults");if(!q){el.innerHTML='<div class="search-hint">\u8f93\u5165\u5173\u952e\u8bcd\u641c\u7d22</div>';return;}var results=[];collections.forEach(function(col){col.bookmarks.forEach(function(b){if((b.title+" "+b.url+" "+(b.desc||"")).toLowerCase().indexOf(q)!==-1)results.push({bm:b,folder:col.name,fid:col.id})})});if(!results.length){el.innerHTML='<div class="search-empty">\u672a\u627e\u5230\u76f8\u5173\u6536\u85cf</div>';return;}el.innerHTML=results.map(function(r){return '<div class="search-result" onclick="closeSearch();openPreview('+r.fid+')"><div class="search-result-folder">'+esc(r.folder)+'</div><div class="search-result-title">'+esc(r.bm.title)+'</div><div class="search-result-url">'+esc(r.bm.url)+'</div>'+(r.bm.desc?'<div class="search-result-desc">'+esc(r.bm.desc)+'</div>':'')+'</div>';}).join("");lucide.createIcons();}
 
-function loadSyncConfig(){try{gistId=localStorage.getItem("noir-gist-id");ghToken=localStorage.getItem("noir-gh-token");}catch(e){}updateSyncUI();if(ghToken){if(gistId){autoPullFromGist()}else{findAndPull()}}}async function findAndPull(){await findOrCreateGist();if(gistId)await autoPullFromGist();}
+function loadSyncConfig(){try{ghToken=localStorage.getItem("noir-gh-token");}catch(e){}updateSyncUI();}
 function updateSyncUI(){var btn=document.getElementById("syncBtn");if(!btn)return;if(ghToken){btn.innerHTML='<i data-lucide="cloud" style="width:18px;height:18px"></i><span>\u63a8\u9001\u6570\u636e</span>';btn.className="nav-btn connected";var dl=document.getElementById("disconnectLink");if(dl)dl.style.display="inline";}else{btn.innerHTML='<i data-lucide="cloud-off" style="width:18px;height:18px"></i><span>\u8fde\u63a5\u4e91</span>';btn.className="nav-btn";var dl=document.getElementById("disconnectLink");if(dl)dl.style.display="none";}lucide.createIcons();}
 function openSyncSettings(){document.getElementById("syncModalOverlay").classList.add("active");var ti=document.getElementById("syncTokenInput");if(ghToken)ti.value=ghToken;setTimeout(function(){ti.focus()},100);}
 function closeSyncModal(){document.getElementById("syncModalOverlay").classList.remove("active");}
 function handleSyncClick(){if(!ghToken){openSyncSettings();return;}syncNow();}
 function saveSyncToken(){var t=document.getElementById("syncTokenInput").value.trim();if(!t)return;ghToken=t;localStorage.setItem("noir-gh-token",ghToken);closeSyncModal();updateSyncUI();showToast("\u5df2\u8fde\u63a5 - \u70b9\u51fb\u4e91\u540c\u6b65\u63a8\u9001\u6570\u636e");}
 function disconnectSync(){ghToken=null;localStorage.removeItem("noir-gh-token");closeSyncModal();updateSyncUI();showToast("\u5df2\u65ad\u5f00\u8fde\u63a5");}
-async function gistFetch(url,opts){opts=opts||{};opts.headers=Object.assign({"Authorization":"token "+ghToken,"Accept":"application/vnd.github.v3+json"},opts.headers||{});var r=await fetch(url,opts);if(!r.ok)throw new Error("API "+r.status);return r.json();}
-async function findOrCreateGist(){showToast("\u6b63\u5728\u67e5\u627e\u4e91\u7aef...");try{var gs=await gistFetch(GIST_API+"/gists?per_page=100");var found=null;for(var i=0;i<gs.length;i++){if(gs[i].description===GIST_DESC){found=gs[i];break;}}if(found){gistId=found.id;localStorage.setItem("noir-gist-id",gistId);var rc=found.files["bookmarks.json"];if(rc){var rd=JSON.parse(rc.content);if(rd&&rd.collections){collections=rd.collections||[];recentBookmarks=rd.recent||[];nextId=rd.nextId||1;renderAll();saveLocal();}}showToast("\u5df2\u52a0\u8f7d\u4e91\u7aef\u6570\u636e \u2714");}else{var res=await gistFetch(GIST_API+"/gists",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({description:GIST_DESC,public:false,files:{"bookmarks.json":{"content":JSON.stringify(buildExportData(),null,2)}}})});gistId=res.id;localStorage.setItem("noir-gist-id",gistId);showToast("\u4e91\u7aef\u5df2\u521b\u5efa \u2714");}}catch(e){showToast("\u8fde\u63a5\u5931\u8d25",true);}}
+
+
 function buildExportData(){return{collections:collections,recent:recentBookmarks,nextId:nextId,updatedAt:new Date().toISOString()};}
 async function syncNow(){if(!ghToken){openSyncSettings();return;}showToast("\u6b63\u5728\u63a8\u9001...");try{var data=JSON.stringify(buildExportData(),null,2);await pushToRepo(data);saveLocal();document.getElementById("syncTime").textContent="\u6700\u540e\u540c\u6b65\uff1a"+new Date().toLocaleString("zh-CN");showToast("\u63a8\u9001\u5b8c\u6210 \u2714");}catch(e){showToast("\u63a8\u9001\u5931\u8d25: "+e.message,true);}}
 function mergeData(l,r){if(!r)return l;if(!l)return r;var mc=[],lm={},rm={},ids={};l.collections.forEach(function(c){lm[c.id]=c;ids[c.id]=1});r.collections.forEach(function(c){rm[c.id]=c;ids[c.id]=1});Object.keys(ids).forEach(function(id){id=parseInt(id);var lc=lm[id],rc=rm[id];if(lc&&rc){var us={},mb=[];rc.bookmarks.forEach(function(b){if(!us[b.url]){us[b.url]=1;mb.push(b)}});lc.bookmarks.forEach(function(b){if(!us[b.url]){us[b.url]=1;mb.push(b)}});mc.push({id:id,name:rc.name,bookmarks:mb})}else if(rc)mc.push(rc);else if(lc)mc.push(lc)});var rus={},mr=[];(r.recent||[]).concat(l.recent||[]).forEach(function(b){if(!rus[b.domain]){rus[b.domain]=1;mr.push(b)}});return{collections:mc,recent:mr.slice(0,20),nextId:Math.max(l.nextId||1,r.nextId||1),updatedAt:new Date().toISOString()}}
