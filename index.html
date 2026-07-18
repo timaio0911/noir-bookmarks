@@ -258,13 +258,8 @@ function openPreview(id){
 function closePreview(){document.getElementById("previewOverlay").classList.remove("active");document.getElementById("previewPanel").classList.remove("active");}
 
 function loadAdmin(){
-  try{
-    ghToken=localStorage.getItem("noir-admin-token");
-    var stored=localStorage.getItem("noir-admin-pwd");
-    hasPwd=!!stored;
-  }catch(e){}
-  if(!hasPwd)localStorage.setItem("noir-admin-pwd",btoa(DEFAULT_PWD));
-  hasPwd=true;
+  try{ghToken=localStorage.getItem("noir-admin-token");}catch(e){}
+  var storedPwd=localStorage.getItem("noir-admin-pwd");if(!storedPwd||storedPwd.length>20)localStorage.setItem("noir-admin-pwd",DEFAULT_PWD);
   if(ghToken)activateAdmin();
 }
 
@@ -292,7 +287,7 @@ function doPwdLogin(){
   var p=document.getElementById("modalInput").value.trim();
   if(!p)return;
   var stored=localStorage.getItem("noir-admin-pwd");
-  if(btoa(p)!==stored){showToast("\u5bc6\u7801\u9519\u8bef",true);return;}
+  if(p!==stored){showToast("\u5bc6\u7801\u9519\u8bef",true);return;}
   closeModal();
   activateAdmin();
   if(!ghToken)setupToken();
@@ -316,7 +311,7 @@ function doSaveToken(){
   ghToken=t;
   localStorage.setItem("noir-admin-token",ghToken);
   closeModal();
-  showToast("\u8bbe\u7f6e\u5b8c\u6210");
+  showToast("\u8bbe\u7f6e\u5b8c\u6210 \u2714");
 }
 
 function openAdminPanel(){
@@ -342,7 +337,7 @@ function changePwd(){
 function doChangePwd(){
   var p=document.getElementById("modalInput").value.trim();
   if(!p||p.length<4){showToast("\u5bc6\u7801\u81f3\u5c114\u4f4d",true);return;}
-  localStorage.setItem("noir-admin-pwd",btoa(p));
+  localStorage.setItem("noir-admin-pwd",p);
   closeModal();
   showToast("\u5bc6\u7801\u5df2\u4fee\u6539");
 }
