@@ -1,6 +1,24 @@
 {
-  "collections": [],
-  "recent": [],
-  "nextId": 1,
-  "updatedAt": "2026-07-18T08:08:36.370Z"
+  "collections": [
+    {
+      "id": 1,
+      "name": "test",
+      "bookmarks": [
+        {
+          "title": "timaio0911.github.io",
+          "url": "timaio0911.github.io",
+          "domain": "timaio0911.github.io",
+          "desc": ""
+        }
+      ]
+    }
+  ],
+  "recent": [
+    {
+      "title": "timaio0911.github.io",
+      "domain": "timaio0911.github.io"
+    }
+  ],
+  "nextId": 2,
+  "updatedAt": "2026-07-18T09:18:16.849Z"
 }
