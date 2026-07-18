@@ -88,6 +88,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .preview-action-btn.remove{color:var(--fg-gray)}
 .preview-action-btn:hover{color:var(--fg-white)}
 .preview-empty{padding:4rem 2rem;text-align:center;color:var(--fg-gray);font-style:italic}
+.preview-add{padding:1rem 2rem;border-top:1px solid rgba(255,255,255,.1);flex-shrink:0;background:var(--bg-zinc)}
 .search-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:75;opacity:0;pointer-events:none;transition:opacity .3s var(--ease);display:flex;flex-direction:column;align-items:center;padding-top:12vh}
 .search-overlay.active{opacity:1;pointer-events:all}
 .search-box{width:100%;max-width:640px;padding:0 1.5rem}
@@ -106,6 +107,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .search-result-folder{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem}
 .search-empty,.search-hint{text-align:center;padding:3rem;color:var(--fg-gray)}
 .search-hint{font-size:14px}
+.footer-input-group{display:flex;gap:0}
+.footer-input-group .modal-input{flex:1}
+.footer-input-group .modal-btn{flex-shrink:0}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:80;opacity:0;pointer-events:none;transition:opacity .3s var(--ease);display:flex;align-items:center;justify-content:center}
 .modal-overlay.active{opacity:1;pointer-events:all}
 .modal{background:var(--bg-zinc);padding:2.5rem;width:100%;max-width:420px;transform:translateY(20px);transition:transform .4s var(--ease)}
@@ -150,7 +154,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <section class="footer"><h2 class="footer-title">管理收藏</h2><div class="footer-grid"><div class="footer-col"><h3>常用操作</h3></div><div class="footer-col"><h3>快速添加</h3><div class="footer-input-group"><input type="text" class="modal-input" id="quickAddInput" placeholder="输入网址回车..."><button class="modal-btn modal-btn-confirm" onclick="quickAdd()">添加</button></div></div><div class="footer-col"><div class="footer-meta"><p id="syncTime"></p><button class="modal-btn modal-btn-confirm" id="pushBtn" onclick="syncNow()" style="display:none;margin-top:1rem;width:100%">推送数据到仓库</button><p>© 2026 收藏库</p></div></div></div></section>
 <button class="fab hidden" id="fabBtn" onclick="openNewFolderModal()"><span class="fab-icon"><i data-lucide="plus" style="width:24px;height:24px"></i></span><span class="fab-label">新建分组</span></button>
 <div class="preview-overlay" id="previewOverlay" onclick="closePreview()"></div>
-<div class="preview-panel" id="previewPanel"><div class="preview-header"><h3 class="preview-title" id="previewTitle"></h3><button class="preview-close" onclick="closePreview()"><i data-lucide="x" style="width:20px;height:20px"></i></button></div><div class="preview-list" id="previewList"></div><div class="preview-add" id="previewAdd" style="display:none"><input type="text" class="modal-input" id="bookmarkUrlInput" placeholder="添加网址..." style="margin-bottom:.5rem"><input type="text" class="modal-input" id="bookmarkDescInput" placeholder="备注（可选）" style="margin-bottom:.5rem"><button class="modal-btn modal-btn-confirm" onclick="addBookmark()" style="width:100%">添加</button></div></div>
+<div class="preview-panel" id="previewPanel"><div class="preview-header"><h3 class="preview-title" id="previewTitle"></h3><button class="preview-close" onclick="closePreview()"><i data-lucide="x" style="width:20px;height:20px"></i></button></div><div class="preview-list" id="previewList"></div><div class="preview-add" id="previewAdd" style="display:none"><input type="text" class="modal-input" id="bookmarkUrlInput" placeholder="添加网址..." style="margin-bottom:.5rem"><input type="text" class="modal-input" id="bookmarkDescInput" placeholder="备注（可选）" style="margin-bottom:.5rem"><button class="modal-btn modal-btn-confirm" onclick="addBookmark()" style="width:100%">添加</button></div></div></div>
 <div class="modal-overlay" id="modalOverlay"><div class="modal"><div class="modal-title" id="modalTitle">新建收藏夹</div><div class="modal-desc" id="modalDesc"></div><input type="text" class="modal-input" id="modalInput" placeholder=""><div class="modal-hint" id="modalHint"></div><div class="modal-actions" id="modalActions"></div></div></div>
 <div class="search-overlay" id="searchOverlay"><div class="search-box"><div class="search-input-wrap"><i data-lucide="search" style="width:24px;height:24px"></i><input type="text" class="search-input" id="searchInput" placeholder="搜索收藏..." oninput="doSearch()"><button class="search-close" onclick="closeSearch()">ESC</button></div><div class="search-results" id="searchResults"><div class="search-hint">输入关键词搜索</div></div></div></div>
 <script>
