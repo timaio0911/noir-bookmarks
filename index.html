@@ -221,19 +221,65 @@ function openPreview(id){
   lucide.createIcons();
 }
 function closePreview(){document.getElementById("previewOverlay").classList.remove("active");document.getElementById("previewPanel").classList.remove("active");}
-function loadAdmin(){try{ghToken=localStorage.getItem("noir-admin-token");}catch(e){}if(ghToken)activateAdmin();}
+function loadAdmin(){try{ghToken=localStorage.getItem("noir-admin-token");var pwd=localStorage.getItem("noir-admin-pwd");if(pwd)hasPwd=true;else hasPwd=false;}catch(e){hasPwd=false;}if(ghToken)activateAdmin();}
+var hasPwd=false;
 function activateAdmin(){isAdmin=true;document.getElementById("fabBtn").classList.remove("hidden");document.getElementById("pushBtn").style.display="block";var pa=document.getElementById("previewAdd");if(pa)pa.style.display="block";}
 function openAdminLogin(){
-  document.getElementById("modalTitle").textContent="\u7ba1\u7406\u5458\u767b\u5f55";
-  document.getElementById("modalDesc").textContent="\u53cc\u51fb\u5bfc\u822a\u680f LOGO \u6216\u6309 Ctrl+Shift+A";
-  var input=document.getElementById("modalInput");
-  input.type="password";input.placeholder="\u8f93\u5165 Token...";input.value=ghToken||"";
-  document.getElementById("modalHint").textContent="Token \u9700\u8981 repo \u6743\u9650";
-  document.getElementById("modalActions").innerHTML='<button class="modal-btn modal-btn-cancel" onclick="closeModal()">\u53d6\u6d88</button><button class="modal-btn modal-btn-confirm" onclick="doAdminLogin()">\u767b\u5f55</button>';
+  if(hasPwd){
+    document.getElementById("modalTitle").textContent="\u7ba1\u7406\u5458\u767b\u5f55";
+    document.getElementById("modalDesc").textContent="\u8f93\u5165\u5bc6\u7801\u89e3\u9501\u7ba1\u7406\u529f\u80fd";
+    var input=document.getElementById("modalInput");
+    input.type="password";input.placeholder="\u8f93\u5165\u5bc6\u7801...";input.value="";
+    document.getElementById("modalHint").textContent="";
+    document.getElementById("modalActions").innerHTML='<button class="modal-btn modal-btn-cancel" onclick="closeModal()">\u53d6\u6d88</button><button class="modal-btn modal-btn-confirm" onclick="doPwdLogin()">\u767b\u5f55</button>';
+  }else{
+    document.getElementById("modalTitle").textContent="\u8bbe\u7f6e\u7ba1\u7406\u5bc6\u7801";
+    document.getElementById("modalDesc").textContent="\u9996\u6b21\u4f7f\u7528\uff0c\u8bf7\u8bbe\u7f6e\u4e00\u4e2a\u5bc6\u7801";
+    var input=document.getElementById("modalInput");
+    input.type="password";input.placeholder="\u8bbe\u7f6e\u5bc6\u7801...";input.value="";
+    document.getElementById("modalHint").textContent="\u8bf7\u8bb0\u4f4f\u6b64\u5bc6\u7801\uff0c\u7528\u4e8e\u540e\u7eed\u767b\u5f55";
+    document.getElementById("modalActions").innerHTML='<button class="modal-btn modal-btn-cancel" onclick="closeModal()">\u53d6\u6d88</button><button class="modal-btn modal-btn-confirm" onclick="doSetPwd()">\u8bbe\u7f6e</button>';
+  }
   document.getElementById("modalOverlay").classList.add("active");
   setTimeout(function(){input.focus()},100);
 }
-function doAdminLogin(){var t=document.getElementById("modalInput").value.trim();if(!t)return;ghToken=t;localStorage.setItem("noir-admin-token",ghToken);activateAdmin();closeModal();showToast("\u5df2\u767b\u5f55\u7ba1\u7406\u5458");}
+function doSetPwd(){
+  var p=document.getElementById("modalInput").value.trim();
+  if(!p||p.length<4){showToast("\u5bc6\u7801\u81f3\u5c114\u4f4d",true);return;}
+  localStorage.setItem("noir-admin-pwd",btoa(p));
+  hasPwd=true;
+  closeModal();
+  activateAdmin();
+  setupToken();
+}
+function doPwdLogin(){
+  var p=document.getElementById("modalInput").value.trim();
+  if(!p)return;
+  var stored=localStorage.getItem("noir-admin-pwd");
+  if(btoa(p)!==stored){showToast("\u5bc6\u7801\u9519\u8bef",true);return;}
+  closeModal();
+  activateAdmin();
+  if(!ghToken)setupToken();
+  else showToast("\u5df2\u89e3\u9501");
+}
+function setupToken(){
+  document.getElementById("modalTitle").textContent="\u8bbe\u7f6e GitHub Token";
+  document.getElementById("modalDesc").textContent="\u7528\u4e8e\u63a8\u9001\u6570\u636e\u5230\u4ed3\u5e93";
+  var input=document.getElementById("modalInput");
+  input.type="password";input.placeholder="\u7c98\u8d34 Token...";input.value="";
+  document.getElementById("modalHint").textContent="Token \u9700\u8981 repo \u6743\u9650";
+  document.getElementById("modalActions").innerHTML='<button class="modal-btn modal-btn-cancel" onclick="closeModal()">\u7a0d\u540e</button><button class="modal-btn modal-btn-confirm" onclick="doSaveToken()">\u4fdd\u5b58</button>';
+  document.getElementById("modalOverlay").classList.add("active");
+  setTimeout(function(){input.focus()},100);
+}
+function doSaveToken(){
+  var t=document.getElementById("modalInput").value.trim();
+  if(!t)return;
+  ghToken=t;
+  localStorage.setItem("noir-admin-token",ghToken);
+  closeModal();
+  showToast("\u8bbe\u7f6e\u5b8c\u6210");
+}
 function closeModal(){document.getElementById("modalOverlay").classList.remove("active");}
 function openNewFolderModal(){
   if(!isAdmin)return;
