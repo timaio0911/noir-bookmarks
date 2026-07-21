@@ -11,14 +11,30 @@
           "desc": ""
         }
       ]
+    },
+    {
+      "id": 2,
+      "name": "game",
+      "bookmarks": [
+        {
+          "title": "fzgamer.com",
+          "url": "www.fzgamer.com",
+          "domain": "www.fzgamer.com",
+          "desc": "方舟游戏（免费下载）"
+        }
+      ]
     }
   ],
   "recent": [
+    {
+      "title": "fzgamer.com",
+      "domain": "www.fzgamer.com"
+    },
     {
       "title": "timaio0911.github.io",
       "domain": "timaio0911.github.io"
     }
   ],
-  "nextId": 2,
-  "updatedAt": "2026-07-18T09:18:16.849Z"
+  "nextId": 3,
+  "updatedAt": "2026-07-21T06:21:15.870Z"
 }
